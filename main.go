@@ -1,11 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os/exec"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 var (
@@ -36,5 +39,38 @@ func main() {
 	}
 	lens = append(lens, l)
 
-	fmt.Println(lens)
+	x := make([]float64, len(lens))
+	for i, l := range lens {
+		x[i] = float64(l)
+	}
+	myPlot(x)
+}
+
+func myPlot(x []float64) {
+	data := make(plotter.XYs, len(x))
+	for i := 0; i < len(x); i++ {
+		data[i].X = float64(i)
+		data[i].Y = x[i]
+	}
+
+	p, err := plot.New()
+	if err != nil {
+		panic(err)
+	}
+
+	l, err := plotter.NewLine(data)
+	if err != nil {
+		panic(err)
+	}
+
+	p.Add(l)
+
+	file := "./img/img.png"
+	if err = p.Save(10*vg.Inch, 6*vg.Inch, file); err != nil {
+		panic(err)
+	}
+
+	if err = exec.Command("open", file).Run(); err != nil {
+		panic(err)
+	}
 }
